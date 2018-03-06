@@ -1,0 +1,180 @@
+
+<button class="back {{activeQuestion > 1 ? '-light' : ''}} {{activeQuestion > 0 ? '-visible' : ''}}" type="button" name="button" on:click="goBack()">Back</button>
+<div class="questions {{reverseOrder ? '-reverse' : ''}}">
+	{{#each questions as question, questionIndex}}
+		{{#if activeQuestion == questionIndex}}
+			<div class="question {{questionIndex > 1 ? '-light' : ''}}" in:fade='{delay: 1000, duration: 1000}' out:fade='{duration: 1000}'>
+				<h3>{{question.text}}</h3>
+				<div class="answers">
+					{{#each question.answers as answer, answerIndex}}
+						<Answer selected="{{answer.selected}}" answer="{{answer.text}}" answerIndex="{{index}}" questionIndex="{{questionIndex}}" on:handleAnswer="submitAnswer(event.answer, answerIndex)" />
+					{{/each}}
+				</div>
+			</div>
+		{{/if}}
+	{{/each}}
+</div>
+<!-- <div class="results {{activeQuestion > 1 ? '-light' : ''}}">
+	{{submittedAnswers.length ? 'Overall: ' : ''}}
+	{{#each submittedAnswers as submittedAnswer, index}}
+		{{index != 0 ? ', ' : ''}}{{submittedAnswer}}
+	{{/each}}
+</div> -->
+
+<script>
+	import Answer from './Answer.html';
+	import { push, splice } from 'svelte-extras';
+	import { fade } from 'svelte-transitions';
+	export default {
+		data() {
+			return {
+				reverseOrder: false,
+				activeQuestion: 0,
+				submittedAnswers: [],
+				questions: [{
+						text: "How many players?",
+						answers: [{
+								text: "2"
+							},
+							{
+								text: "3"
+							},
+							{
+								text: "4"
+							},
+							{
+								text: "5"
+							},
+							{
+								text: "6"
+							}
+						]
+					},
+					{
+						text: "What setting?",
+						answers: [{
+								text: "Fantasy"
+							},
+							{
+								text: "Sci-Fi"
+							},
+							{
+								text: "Family"
+							},
+							{
+								text: "Adventure"
+							},
+							{
+								text: "Ocean & Marine"
+							},
+							{
+								text: "Medieval"
+							}
+						]
+					},
+					{
+						text: "How long?",
+						answers: [{
+								text: "15 - 30mins"
+							},
+							{
+								text: "30mins - 1hr"
+							},
+							{
+								text: "1hr - 2hrs"
+							}
+						]
+					}
+				]
+			}
+		},
+		methods: {
+			push,
+			splice,
+			submitAnswer(answer, answerIndex) {
+
+				this.set({reverseOrder: false});
+
+				if (this.get('activeQuestion') === 1) {
+					document.querySelector('.bg').style.backgroundImage = `url(dist/img/${answer}.jpg)`;
+					document.querySelector('.bg').style.opacity = 1;
+				}
+
+				let questionData = this.get('questions'),
+					activeQuestion = this.get('activeQuestion');
+
+				questionData[activeQuestion].answers[answerIndex].selected = true;
+
+				this.set({questions: questionData});
+
+				this.set({
+					activeQuestion: this.get('activeQuestion') + 1
+				})
+				this.push('submittedAnswers', answer);
+			},
+			goBack() {
+				this.set({reverseOrder: true});
+				this.set({activeQuestion: this.get('activeQuestion')-1});
+				if (this.get('activeQuestion') === 1) {
+					document.querySelector('.bg').style.opacity = 0;
+				}
+
+			}
+		},
+		components: {
+			Answer
+		},
+		transitions: {
+			fade
+		}
+
+
+	}
+</script>
+
+
+<style>
+	.back {
+		border: 1px solid #000;
+		color: #000;
+		background: transparent;
+		visibility: hidden;
+	}
+	.back.-light {
+		border: 1px solid #fff;
+		color: #fff;
+	}
+	.back.-visible {
+		visibility: visible;
+	}
+	.questions {
+		display: flex;
+		flex-direction: column;
+	}
+	.questions.-reverse {
+		flex-direction: column-reverse;
+	}
+	.question {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+
+	}
+	.question.-light {
+		color: #fff;
+	}
+
+	.question.active {
+	}
+	.answers {
+		display: flex;
+		flex-wrap: wrap;
+	}
+	.results {
+		margin-top: 3rem;
+		text-align: center;
+	}
+	.results.-light {
+		color: #fff;
+	}
+</style>
